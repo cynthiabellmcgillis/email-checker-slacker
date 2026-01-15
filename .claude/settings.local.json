@@ -5,7 +5,11 @@
       "Bash(php artisan:*)",
       "Bash(composer require:*)",
       "Bash(composer dev:*)",
-      "Bash(npm install)"
+      "Bash(npm install)",
+      "Bash(composer update:*)",
+      "Bash(brew install:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git add:*)"
     ]
   }
 }
