@@ -9,7 +9,10 @@
       "Bash(composer update:*)",
       "Bash(brew install:*)",
       "Bash(git remote set-url:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(curl:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
