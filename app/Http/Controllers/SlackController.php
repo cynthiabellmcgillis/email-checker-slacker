@@ -203,7 +203,7 @@ class SlackController extends Controller
 
         // Also try alternative URL patterns
         // Pattern: /email/{portal_id}/edit/{email_id}
-        if (preg_match('/app\.hubspot\.com\/email\/\d+\/edit\/(\d+)/i', $url, $matches)) {
+        if (preg_match('/app\.hubspot\.com\/email\/\d+\/(?:edit|details)\/(\d+)/i', $url, $matches)) {
             return $matches[1];
         }
 

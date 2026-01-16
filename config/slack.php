@@ -32,7 +32,7 @@ return [
     | Captures the numeric email ID from various HubSpot email URL formats.
     |
     */
-    'hubspot_url_pattern' => '/app\.hubspot\.com\/email\/\d+\/edit\/(\d+)/i',
+    'hubspot_url_pattern' => '/app\.hubspot\.com\/email\/\d+\/(?:edit|details)\/(\d+)/i',
 
     /*
     |--------------------------------------------------------------------------
