@@ -39,10 +39,10 @@ return [
     |--------------------------------------------------------------------------
     | UTM Validation Rules
     |--------------------------------------------------------------------------
-    */
+   
     'utm_rules' => [
         'required_params' => ['utm_source', 'utm_medium', 'utm_campaign'],
         'valid_sources' => ['email'],
         'valid_mediums' => ['newsletter', 'lifecycle', 'onboarding'],
-    ],
+    ], */
 ];

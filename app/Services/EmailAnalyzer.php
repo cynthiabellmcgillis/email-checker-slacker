@@ -64,21 +64,21 @@ class EmailAnalyzer
         }
 
         // Check for "Dear" greeting
-        $hasDear = stripos($email->bodyText, 'dear ') !== false ||
-                   stripos($email->bodyText, 'dear,') !== false;
-        $checks['no_dear'] = [
-            'name' => 'No "Dear" Greeting',
-            'status' => $hasDear ? AnalysisResult::STATUS_FAIL : AnalysisResult::STATUS_PASS,
-            'message' => $hasDear ? 'Found "Dear" greeting (should use "Hi" instead)' : 'No "Dear" greeting found',
-        ];
+        //$hasDear = stripos($email->bodyText, 'dear ') !== false ||
+          //         stripos($email->bodyText, 'dear,') !== false;
+        //$checks['no_dear'] = [
+          //  'name' => 'No "Dear" Greeting',
+            //'status' => $hasDear ? AnalysisResult::STATUS_FAIL : AnalysisResult::STATUS_PASS,
+            //'message' => $hasDear ? 'Found "Dear" greeting (should use "Hi" instead)' : 'No "Dear" greeting found',
+        //];
 
         // Check for spam triggers
-        $spamTriggers = $this->checkSpamTriggers($email->bodyText);
-        $checks['spam_triggers'] = [
-            'name' => 'Spam Triggers',
-            'status' => empty($spamTriggers) ? AnalysisResult::STATUS_PASS : AnalysisResult::STATUS_WARN,
-            'message' => empty($spamTriggers) ? 'No spam triggers detected' : 'Found: ' . implode(', ', $spamTriggers),
-        ];
+        //$spamTriggers = $this->checkSpamTriggers($email->bodyText);
+        //$checks['spam_triggers'] = [
+          //  'name' => 'Spam Triggers',
+            //'status' => empty($spamTriggers) ? AnalysisResult::STATUS_PASS : AnalysisResult::STATUS_WARN,
+            //'message' => empty($spamTriggers) ? 'No spam triggers detected' : 'Found: ' . implode(', ', $spamTriggers),
+        //];
 
         return $checks;
     }
@@ -111,7 +111,7 @@ class EmailAnalyzer
 
         try {
             $response = $this->anthropic->messages->create([
-                'model' => 'claude-sonnet-4-20250514',
+                'model' => 'claude-sonnet-4',
                 'max_tokens' => 2048,
                 'system' => 'You are an email marketing expert analyzing emails for brand compliance and best practices.',
                 'messages' => [
