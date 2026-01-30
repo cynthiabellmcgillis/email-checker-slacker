@@ -85,7 +85,7 @@ class EmailAnalyzer
 
         try {
             $response = $this->anthropic->messages->create([
-                'model' => 'claude-sonnet-4',
+                'model' => 'claude-sonnet-4-20250514',
                 'max_tokens' => 2048,
                 'system' => 'You are an email marketing expert analyzing emails for brand compliance and best practices. Always respond with valid JSON only.',
                 'messages' => [
