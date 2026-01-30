@@ -19,7 +19,6 @@ class AnalysisResult
         public readonly array $forbiddenLinks = [],
         public readonly ?string $aiAnalysis = null,
         public readonly string $verdict = self::VERDICT_NEEDS_FIXES,
-        public readonly int $confidence = 3,
         public readonly array $aiIssues = [],
         public readonly string $aiSummary = '',
     ) {}
@@ -113,7 +112,6 @@ class AnalysisResult
             'forbidden_links' => $this->forbiddenLinks,
             'ai_analysis' => $this->aiAnalysis,
             'verdict' => $this->verdict,
-            'confidence' => $this->confidence,
             'ai_issues' => $this->aiIssues,
             'ai_summary' => $this->aiSummary,
             'summary' => [

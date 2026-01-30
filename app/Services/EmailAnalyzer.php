@@ -42,7 +42,6 @@ class EmailAnalyzer
             forbiddenLinks: $linkResults['forbidden'],
             aiAnalysis: $aiResponse,
             verdict: $verdict,
-            confidence: $parsedAi['confidence'],
             aiIssues: $parsedAi['issues'],
             aiSummary: $parsedAi['summary'],
         );
@@ -104,7 +103,6 @@ class EmailAnalyzer
     {
         $default = [
             'verdict' => AnalysisResult::VERDICT_NEEDS_FIXES,
-            'confidence' => 3,
             'issues' => [],
             'summary' => 'AI analysis unavailable',
         ];
@@ -132,15 +130,11 @@ class EmailAnalyzer
                 $verdict = AnalysisResult::VERDICT_NEEDS_FIXES;
             }
 
-            $confidence = (int) ($parsed['confidence'] ?? 3);
-            $confidence = max(1, min(5, $confidence));
-
             $issues = $this->normalizeIssues($parsed['issues'] ?? []);
             $summary = $parsed['summary'] ?? 'Analysis complete';
 
             return [
                 'verdict' => $verdict,
-                'confidence' => $confidence,
                 'issues' => $issues,
                 'summary' => $summary,
             ];

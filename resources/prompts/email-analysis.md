@@ -26,7 +26,6 @@ Analyze this email against the brand guidelines above and return a JSON response
 ```json
 {
   "verdict": "ship" | "needs_fixes" | "do_not_ship",
-  "confidence": 1-5,
   "issues": [
     {
       "severity": "critical" | "warning" | "suggestion",
@@ -44,14 +43,6 @@ Analyze this email against the brand guidelines above and return a JSON response
 - **ship**: Email meets all guidelines, no critical issues, minor suggestions only
 - **needs_fixes**: Email has warnings or issues that should be addressed before sending
 - **do_not_ship**: Email has critical problems that must be fixed
-
-### Confidence Scale
-
-- **5**: Very confident in assessment
-- **4**: Confident, minor uncertainty
-- **3**: Moderately confident
-- **2**: Some uncertainty
-- **1**: Low confidence, needs human review
 
 ### Issue Categories
 
