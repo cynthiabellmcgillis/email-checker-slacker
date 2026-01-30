@@ -6,6 +6,7 @@ use Anthropic\Client as AnthropicClient;
 use App\DTOs\AnalysisResult;
 use App\DTOs\EmailContent;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class EmailAnalyzer
 {
@@ -24,14 +25,26 @@ class EmailAnalyzer
     {
         $checks = $this->runBasicChecks($email);
         $linkResults = $this->linkChecker->checkLinks($email->links);
-        $aiAnalysis = $this->runAiAnalysis($email);
+        $aiResponse = $this->runAiAnalysis($email);
+        $parsedAi = $this->parseAiResponse($aiResponse);
+
+        // Determine final verdict considering link issues
+        $verdict = $this->determineFinalVerdict(
+            $parsedAi['verdict'],
+            $linkResults['broken'],
+            $linkResults['forbidden']
+        );
 
         return new AnalysisResult(
-            checks: array_merge($checks, $this->parseAiChecks($aiAnalysis)),
+            checks: $checks,
             brokenLinks: $linkResults['broken'],
             utmIssues: $linkResults['utm_issues'],
             forbiddenLinks: $linkResults['forbidden'],
-            aiAnalysis: $aiAnalysis,
+            aiAnalysis: $aiResponse,
+            verdict: $verdict,
+            confidence: $parsedAi['confidence'],
+            aiIssues: $parsedAi['issues'],
+            aiSummary: $parsedAi['summary'],
         );
     }
 
@@ -63,46 +76,7 @@ class EmailAnalyzer
             ];
         }
 
-        // Check for "Dear" greeting
-        //$hasDear = stripos($email->bodyText, 'dear ') !== false ||
-          //         stripos($email->bodyText, 'dear,') !== false;
-        //$checks['no_dear'] = [
-          //  'name' => 'No "Dear" Greeting',
-            //'status' => $hasDear ? AnalysisResult::STATUS_FAIL : AnalysisResult::STATUS_PASS,
-            //'message' => $hasDear ? 'Found "Dear" greeting (should use "Hi" instead)' : 'No "Dear" greeting found',
-        //];
-
-        // Check for spam triggers
-        //$spamTriggers = $this->checkSpamTriggers($email->bodyText);
-        //$checks['spam_triggers'] = [
-          //  'name' => 'Spam Triggers',
-            //'status' => empty($spamTriggers) ? AnalysisResult::STATUS_PASS : AnalysisResult::STATUS_WARN,
-            //'message' => empty($spamTriggers) ? 'No spam triggers detected' : 'Found: ' . implode(', ', $spamTriggers),
-        //];
-
         return $checks;
-    }
-
-    private function checkSpamTriggers(string $text): array
-    {
-        $triggers = [];
-
-        // Check for "FREE" in all caps
-        if (preg_match('/\bFREE\b/', $text)) {
-            $triggers[] = '"FREE" in all caps';
-        }
-
-        // Check for excessive dollar signs
-        if (preg_match_all('/\$/', $text, $matches) && count($matches[0]) > 3) {
-            $triggers[] = 'Multiple $ signs';
-        }
-
-        // Check for all caps words (more than 3 consecutive caps words)
-        if (preg_match('/\b[A-Z]{3,}\s+[A-Z]{3,}\s+[A-Z]{3,}\b/', $text)) {
-            $triggers[] = 'Excessive ALL CAPS';
-        }
-
-        return $triggers;
     }
 
     private function runAiAnalysis(EmailContent $email): string
@@ -113,7 +87,7 @@ class EmailAnalyzer
             $response = $this->anthropic->messages->create([
                 'model' => 'claude-sonnet-4',
                 'max_tokens' => 2048,
-                'system' => 'You are an email marketing expert analyzing emails for brand compliance and best practices.',
+                'system' => 'You are an email marketing expert analyzing emails for brand compliance and best practices. Always respond with valid JSON only.',
                 'messages' => [
                     ['role' => 'user', 'content' => $prompt]
                 ]
@@ -121,8 +95,106 @@ class EmailAnalyzer
 
             return $response->content[0]->text ?? '';
         } catch (\Exception $e) {
-            return 'AI analysis unavailable: ' . $e->getMessage();
+            Log::error('AI analysis failed', ['error' => $e->getMessage()]);
+            return '';
         }
+    }
+
+    private function parseAiResponse(string $aiResponse): array
+    {
+        $default = [
+            'verdict' => AnalysisResult::VERDICT_NEEDS_FIXES,
+            'confidence' => 3,
+            'issues' => [],
+            'summary' => 'AI analysis unavailable',
+        ];
+
+        if (empty($aiResponse)) {
+            return $default;
+        }
+
+        try {
+            // Clean up the response - remove any markdown code blocks if present
+            $cleanResponse = $aiResponse;
+            if (preg_match('/```(?:json)?\s*([\s\S]*?)\s*```/', $aiResponse, $matches)) {
+                $cleanResponse = $matches[1];
+            }
+
+            $parsed = json_decode($cleanResponse, true, 512, JSON_THROW_ON_ERROR);
+
+            // Validate and normalize the response
+            $verdict = $parsed['verdict'] ?? AnalysisResult::VERDICT_NEEDS_FIXES;
+            if (!in_array($verdict, [
+                AnalysisResult::VERDICT_SHIP,
+                AnalysisResult::VERDICT_NEEDS_FIXES,
+                AnalysisResult::VERDICT_DO_NOT_SHIP
+            ])) {
+                $verdict = AnalysisResult::VERDICT_NEEDS_FIXES;
+            }
+
+            $confidence = (int) ($parsed['confidence'] ?? 3);
+            $confidence = max(1, min(5, $confidence));
+
+            $issues = $this->normalizeIssues($parsed['issues'] ?? []);
+            $summary = $parsed['summary'] ?? 'Analysis complete';
+
+            return [
+                'verdict' => $verdict,
+                'confidence' => $confidence,
+                'issues' => $issues,
+                'summary' => $summary,
+            ];
+        } catch (\JsonException $e) {
+            Log::warning('Failed to parse AI response as JSON', [
+                'error' => $e->getMessage(),
+                'response' => substr($aiResponse, 0, 500),
+            ]);
+            return $default;
+        }
+    }
+
+    private function normalizeIssues(array $issues): array
+    {
+        $normalized = [];
+        $validSeverities = ['critical', 'warning', 'suggestion'];
+        $validCategories = ['subject', 'preview', 'body', 'cta', 'tone', 'links', 'ps'];
+
+        foreach ($issues as $issue) {
+            if (!is_array($issue)) {
+                continue;
+            }
+
+            $severity = $issue['severity'] ?? 'suggestion';
+            if (!in_array($severity, $validSeverities)) {
+                $severity = 'suggestion';
+            }
+
+            $category = $issue['category'] ?? 'body';
+            if (!in_array($category, $validCategories)) {
+                $category = 'body';
+            }
+
+            $normalized[] = [
+                'severity' => $severity,
+                'category' => $category,
+                'problem' => $issue['problem'] ?? 'Unknown issue',
+                'fix' => $issue['fix'] ?? 'Review and fix as needed',
+            ];
+        }
+
+        return $normalized;
+    }
+
+    private function determineFinalVerdict(string $aiVerdict, array $brokenLinks, array $forbiddenLinks): string
+    {
+        // If there are broken or forbidden links, downgrade verdict if needed
+        if (!empty($brokenLinks) || !empty($forbiddenLinks)) {
+            if ($aiVerdict === AnalysisResult::VERDICT_SHIP) {
+                return AnalysisResult::VERDICT_NEEDS_FIXES;
+            }
+        }
+
+        return $aiVerdict;
     }
 
     private function buildPrompt(EmailContent $email): string
@@ -134,36 +206,6 @@ class EmailAnalyzer
             [$email->subject, $email->previewText, $email->bodyText, $this->guidelines],
             $promptTemplate
         );
-    }
-
-    private function parseAiChecks(string $aiAnalysis): array
-    {
-        $checks = [];
-
-        // Parse PS statement check from AI response
-        if (stripos($aiAnalysis, 'PS statement') !== false) {
-            $hasPs = stripos($aiAnalysis, 'PS statement: Present') !== false ||
-                     stripos($aiAnalysis, 'PS: Found') !== false ||
-                     stripos($aiAnalysis, 'includes a PS') !== false;
-
-            $checks['ps_statement'] = [
-                'name' => 'PS Statement',
-                'status' => $hasPs ? AnalysisResult::STATUS_PASS : AnalysisResult::STATUS_FAIL,
-                'message' => $hasPs ? 'PS statement found' : 'Missing PS statement (recommended at end of email)',
-            ];
-        }
-
-        // Parse CTA check from AI response
-        if (preg_match('/CTA[s]?:?\s*(\d+)/i', $aiAnalysis, $matches)) {
-            $ctaCount = (int) $matches[1];
-            $checks['cta_count'] = [
-                'name' => 'CTA Count',
-                'status' => $ctaCount >= 1 && $ctaCount <= 2 ? AnalysisResult::STATUS_PASS : AnalysisResult::STATUS_WARN,
-                'message' => "{$ctaCount} CTA(s)" . ($ctaCount > 2 ? ' (should be 1-2)' : ''),
-            ];
-        }
-
-        return $checks;
     }
 
     private function loadGuidelines(): string

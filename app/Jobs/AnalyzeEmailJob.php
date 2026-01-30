@@ -63,29 +63,35 @@ class AnalyzeEmailJob implements ShouldQueue
             // Run analysis
             $result = $analyzer->analyze($email);
 
-            // Format and send results
-            $blocks = $formatter->formatAnalysisResult($email->name, $result);
-            $summaryText = $formatter->formatSummaryText($email->name, $result);
-
-            $slack->sendThreadReply($this->channel, $this->threadTs, $summaryText, $blocks);
-
-            // Add final reaction based on result
+            // Remove hourglass reaction
             $slack->removeReaction($this->channel, $this->threadTs, 'hourglass_flowing_sand');
 
-            if ($result->getFailCount() > 0) {
-                $slack->addReaction($this->channel, $this->threadTs, 'x');
-            } elseif ($result->getWarnCount() > 0) {
-                $slack->addReaction($this->channel, $this->threadTs, 'warning');
-            } else {
-                $slack->addReaction($this->channel, $this->threadTs, 'white_check_mark');
+            // Add verdict reaction
+            $verdictReaction = $formatter->getVerdictReaction($result);
+            $slack->addReaction($this->channel, $this->threadTs, $verdictReaction);
+
+            // Post short summary as thread reply
+            $summaryBlocks = $formatter->formatShortSummary($email->name, $result);
+            $summaryText = $formatter->formatSummaryText($email->name, $result);
+            $slack->sendThreadReply($this->channel, $this->threadTs, $summaryText, $summaryBlocks);
+
+            // Post action items as second thread reply if there are issues
+            $actionItemsBlocks = $formatter->formatActionItems($result);
+            if ($actionItemsBlocks !== null) {
+                $slack->sendThreadReply(
+                    $this->channel,
+                    $this->threadTs,
+                    'Action items for this email',
+                    $actionItemsBlocks
+                );
             }
 
             Log::info("Email analysis completed", [
                 'email_id' => $this->emailId,
                 'email_name' => $email->name,
-                'passed' => $result->getPassCount(),
-                'warnings' => $result->getWarnCount(),
-                'failed' => $result->getFailCount(),
+                'verdict' => $result->verdict,
+                'can_ship' => $result->canShip(),
+                'issue_count' => count($result->getAllIssues()),
             ]);
 
         } catch (\Exception $e) {
