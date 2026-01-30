@@ -53,13 +53,14 @@ class LinkChecker
                 ];
             }
 
-            $utmCheck = $this->checkUtmParameters($link);
-            if (!$utmCheck['valid']) {
-                $results['utm_issues'][] = [
-                    'url' => $link,
-                    'issues' => $utmCheck['issues'],
-                ];
-            }
+            // UTM checking disabled
+            // $utmCheck = $this->checkUtmParameters($link);
+            // if (!$utmCheck['valid']) {
+            //     $results['utm_issues'][] = [
+            //         'url' => $link,
+            //         'issues' => $utmCheck['issues'],
+            //     ];
+            // }
         }
 
         return $results;
@@ -121,41 +122,42 @@ class LinkChecker
         }
     }
 
-    private function checkUtmParameters(string $url): array
-    {
-        $parsedUrl = parse_url($url);
-
-        if (!isset($parsedUrl['query'])) {
-            return [
-                'valid' => false,
-                'issues' => ['No UTM parameters found'],
-            ];
-        }
-
-        parse_str($parsedUrl['query'], $params);
-
-        $issues = [];
-        $requiredParams = config('email-checker.utm_rules.required_params', []);
-        $validSources = config('email-checker.utm_rules.valid_sources', []);
-        $validMediums = config('email-checker.utm_rules.valid_mediums', []);
-
-        foreach ($requiredParams as $param) {
-            if (!isset($params[$param]) || empty($params[$param])) {
-                $issues[] = "Missing {$param}";
-            }
-        }
-
-        if (isset($params['utm_source']) && !in_array($params['utm_source'], $validSources)) {
-            $issues[] = "Invalid utm_source: {$params['utm_source']} (expected: " . implode(', ', $validSources) . ")";
-        }
-
-        if (isset($params['utm_medium']) && !in_array($params['utm_medium'], $validMediums)) {
-            $issues[] = "Invalid utm_medium: {$params['utm_medium']} (expected: " . implode(', ', $validMediums) . ")";
-        }
-
-        return [
-            'valid' => empty($issues),
-            'issues' => $issues,
-        ];
-    }
+    // UTM checking disabled
+    // private function checkUtmParameters(string $url): array
+    // {
+    //     $parsedUrl = parse_url($url);
+    //
+    //     if (!isset($parsedUrl['query'])) {
+    //         return [
+    //             'valid' => false,
+    //             'issues' => ['No UTM parameters found'],
+    //         ];
+    //     }
+    //
+    //     parse_str($parsedUrl['query'], $params);
+    //
+    //     $issues = [];
+    //     $requiredParams = config('email-checker.utm_rules.required_params', []);
+    //     $validSources = config('email-checker.utm_rules.valid_sources', []);
+    //     $validMediums = config('email-checker.utm_rules.valid_mediums', []);
+    //
+    //     foreach ($requiredParams as $param) {
+    //         if (!isset($params[$param]) || empty($params[$param])) {
+    //             $issues[] = "Missing {$param}";
+    //         }
+    //     }
+    //
+    //     if (isset($params['utm_source']) && !in_array($params['utm_source'], $validSources)) {
+    //         $issues[] = "Invalid utm_source: {$params['utm_source']} (expected: " . implode(', ', $validSources) . ")";
+    //     }
+    //
+    //     if (isset($params['utm_medium']) && !in_array($params['utm_medium'], $validMediums)) {
+    //         $issues[] = "Invalid utm_medium: {$params['utm_medium']} (expected: " . implode(', ', $validMediums) . ")";
+    //     }
+    //
+    //     return [
+    //         'valid' => empty($issues),
+    //         'issues' => $issues,
+    //     ];
+    // }
 }
