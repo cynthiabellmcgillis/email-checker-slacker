@@ -21,7 +21,7 @@ Analyze the following marketing email against the brand guidelines provided belo
 
 ## Analysis Required
 
-Analyze this email against the brand guidelines and return a JSON response with the following structure:
+Analyze this email against the brand guidelines above and return a JSON response with the following structure:
 
 ```json
 {
@@ -55,42 +55,20 @@ Analyze this email against the brand guidelines and return a JSON response with 
 
 ### Issue Categories
 
-Evaluate the email for:
+Use these categories to classify issues based on the brand guidelines above:
 
-1. **subject**: Subject line quality
-   - Front-loads benefit?
-   - Follows recommended formulas (Problem+Solution, Transformation, Curiosity Gap, Specific Benefit)?
-   - Clear and direct?
-   - Length appropriate (under 65 chars)?
-
-2. **preview**: Preview text quality
-   - Complements subject line?
-   - Provides additional context?
-   - Utilizes available space?
-
-3. **body**: Body content quality
-   - Has quick reward in first 10 seconds (compelling quote, stat, or benefit)?
-   - Single clear focus/idea?
-   - Follows Hook > Problem > Solution > How-To structure?
-   - Specific rather than generic content?
-
-4. **cta**: Call to action analysis
-   - Clear and contextual CTAs?
-   - Appropriate number of CTAs (1-2 recommended)?
-
-5. **ps**: PS statement
-   - Present at end of email?
-   - Adds impact if present?
-
-6. **tone**: Tone and style
-   - Contractions used appropriately for conversational tone?
-   - Product names capitalized consistently?
-   - Professional but approachable language?
+- **subject**: Subject line issues
+- **preview**: Preview text issues
+- **body**: Body content and structure issues
+- **cta**: Call to action issues
+- **tone**: Tone, style, greetings, closings, product naming
+- **links**: Forbidden internal links (Notion, Slack, Google Drive)
+- **ps**: PS statement (optional, not required)
 
 ### Severity Guidelines
 
-- **critical**: Must fix before sending (broken structure, missing CTA, major guideline violations)
-- **warning**: Should fix for better results (suboptimal subject, missing PS, minor issues)
-- **suggestion**: Nice to have improvements (tone tweaks, minor optimizations)
+- **critical**: Violates mandatory guidelines marked in the brand guidelines
+- **warning**: Violates recommended best practices
+- **suggestion**: Minor optimizations not explicitly in guidelines
 
 IMPORTANT: Return ONLY the JSON object, no additional text or markdown code blocks.
