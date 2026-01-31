@@ -42,13 +42,20 @@ class SlackFormatter
             ],
         ];
 
-        // AI Summary
+        // AI Summary (prepend notice if critical issues exist that AI didn't account for)
         if (!empty($result->aiSummary)) {
+            $summaryText = $result->aiSummary;
+
+            // If there are critical issues but AI summary sounds positive, prepend a notice
+            if ($issueCounts['critical'] > 0) {
+                $summaryText = "Has critical issues. " . $summaryText;
+            }
+
             $blocks[] = [
                 'type' => 'section',
                 'text' => [
                     'type' => 'mrkdwn',
-                    'text' => "_" . $result->aiSummary . "_",
+                    'text' => "_" . $summaryText . "_",
                 ],
             ];
         }
