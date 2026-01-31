@@ -6,6 +6,7 @@ use App\Jobs\AnalyzeEmailJob;
 use App\Services\SlackService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class SlackController extends Controller
@@ -105,7 +106,7 @@ class SlackController extends Controller
         // Look for HubSpot email URLs in the message
         $emailId = $this->extractEmailIdFromText($text);
 
-        if ($emailId) {
+        if ($emailId && $this->shouldProcessEmail($emailId, $channel, $messageTs)) {
             Log::info("Found HubSpot email link in message", [
                 'email_id' => $emailId,
                 'channel' => $channel,
@@ -132,7 +133,7 @@ class SlackController extends Controller
             $url = $link['url'] ?? '';
             $emailId = $this->extractEmailIdFromUrl($url);
 
-            if ($emailId) {
+            if ($emailId && $this->shouldProcessEmail($emailId, $channel, $messageTs)) {
                 Log::info("Found HubSpot email link in link_shared event", [
                     'email_id' => $emailId,
                     'url' => $url,
@@ -228,5 +229,24 @@ class SlackController extends Controller
         }
 
         return in_array($channel, $allowedChannels);
+    }
+
+    /**
+     * Check if this email should be processed (prevents duplicate processing).
+     *
+     * Both message and link_shared events can fire for the same HubSpot link,
+     * so we use a cache key to ensure we only process each email once per message.
+     */
+    private function shouldProcessEmail(string $emailId, string $channel, string $messageTs): bool
+    {
+        $cacheKey = "email_check:{$channel}:{$messageTs}:{$emailId}";
+
+        if (Cache::has($cacheKey)) {
+            Log::info("Skipping duplicate email check", ['email_id' => $emailId]);
+            return false;
+        }
+
+        Cache::put($cacheKey, true, now()->addMinutes(5));
+        return true;
     }
 }
