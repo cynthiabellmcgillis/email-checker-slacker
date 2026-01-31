@@ -11,15 +11,7 @@ These do not cover emails that are meant to feel 1:1 or are from sales reps.
 -   Avoid spam triggers (excessive punctuation, all caps)
 -   Personalize when relevant (industry/vertical/persona)
 -   A/B test variations when possible
--   **CUE-DIVE Method**  for Subject Lines:
--   ❏ Contextual: Personalized, localized, segmented
--   ❏ Urgent: Topical, event-driven, deadline-focused
--   ❏ Emotional: Aspirational, problem-solving
--   ❏ Detailed: Clearly states email purpose
--   ❏ Intriguing: Questions, curiosity gaps
--   ❏ Visual: Emojis (use sparingly), unusual formatting
--   ❏ Earned: Social proof, testimonials
--   SUBJECT LINES AFFECT OTHER METRICS TOO! Subject lines affect click through rates & conversions! Poor subject lines can damage the performance of future email campaigns. Do not underestimate their importance!
+
 
 ### Preview Text
 -   Utilize full 90 characters available
@@ -28,27 +20,63 @@ These do not cover emails that are meant to feel 1:1 or are from sales reps.
 -   Avoid default text like “View in browser”
 -   Preview text should end with a period or exclamation point
 
-### Email Content Best Practices
+### Body Content
 -   Email copy should be clear and concise. Brevity is key. Think about conversion, not sharing every detail from the landing page
 -   Focus on value-first content and CTAs. Ask yourself: “what’s in it for the subscriber?”
 -   Avoid walls of text when possible - think facts, not fluff
 -   Lead with benefits and add details where appropriate
 -   Use extremely clear wording and remove words that don’t provide value
--   1-2 CTAs per email is best practice (calls-to-action)
 -   Take advantage of content hierarchy
--   Write for people not technology, this means you can use humor when it makes sense
--   Buttons should be no longer than 25 characters - 14 characters as a standard. 
+-  
+
 
 ### Design Checks
 Mobile-first design
 Consistent template/layout
 Footer has unsubscribe link
+Short paragraphs (1-3 sentences)
+White space between sections
+Bullet points for scanability
+Bold for emphasis (sparingly)
+Mobile-first (most read on phone)
+
+
+### Tone
+Conversational, not formal
+First-person (I/we) and second-person (you)
+Active voice
+Read it out loud—does it sound human?
+Contractions are okay
+Write for people not technology, this means you can use humor when it makes sense
+
+
+
+### CTA Guidelines
+Buttons for primary actions
+Links for secondary actions
+One clear primary CTA per email
+Button text: Action + outcome
+Buttons should be no longer than 25 characters - 14 characters as a standard. 
+
+### Length
+50-125 words for transactional
+150-300 words for educational
+300-500 words for story-driven
+
 
 ### Copy Specifics 
 **These are mandatory and must be followed.**
 
-- Do not have and greetings "hey" "hello" etc 
+- Do not have casual greetings like "hey" "hello" "hi there" — product announcements like "Welcome to [Product]" are acceptable 
 - Do not have any closings "cheers" "the laravel team"
-- On first reference products should have Laravel in front e.g. Laravel Cloud, Laravel Nightwatch, etc. Once mentioned once you can drop Laravel.
-- Contractions are OK
+- On first reference products should have Laravel in front e.g. Laravel Cloud, Laravel Nightwatch, etc. Once mentioned once you can drop Laravel (Please use your judgement on this as sometimes it makes sense not to mention Laravel first.)
 - Never include internal links such as Notion, Slack, or Google Drive links
+
+
+
+
+
+
+
+
+
