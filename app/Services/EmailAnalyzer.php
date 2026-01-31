@@ -181,8 +181,13 @@ class EmailAnalyzer
 
     private function determineFinalVerdict(string $aiVerdict, array $brokenLinks, array $forbiddenLinks): string
     {
-        // If there are broken or forbidden links, downgrade verdict if needed
-        if (!empty($brokenLinks) || !empty($forbiddenLinks)) {
+        // Forbidden internal links are mandatory violations → do_not_ship
+        if (!empty($forbiddenLinks)) {
+            return AnalysisResult::VERDICT_DO_NOT_SHIP;
+        }
+
+        // Broken links prevent shipping but aren't mandatory violations
+        if (!empty($brokenLinks)) {
             if ($aiVerdict === AnalysisResult::VERDICT_SHIP) {
                 return AnalysisResult::VERDICT_NEEDS_FIXES;
             }

@@ -41,8 +41,12 @@ Analyze this email against the brand guidelines above and return a JSON response
 ### Verdict Guidelines
 
 - **ship**: Email meets all guidelines, no critical issues, minor suggestions only
-- **needs_fixes**: Email has warnings or issues that should be addressed before sending
-- **do_not_ship**: Email has critical problems that must be fixed
+- **needs_fixes**: Email has warnings that should be addressed before sending
+- **do_not_ship**: Email violates ANY mandatory guideline (especially "Copy Specifics" rules)
+
+IMPORTANT: Any violation of rules marked as "mandatory" or under a "mandatory" heading MUST result in:
+- severity: "critical"
+- verdict: "do_not_ship"
 
 ### Issue Categories
 
